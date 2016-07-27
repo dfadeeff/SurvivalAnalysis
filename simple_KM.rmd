@@ -1,0 +1,77 @@
+---
+title: "Simple KM"
+output: html_document
+---
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r, echo=FALSE,eval=FALSE}
+summary(cars)
+```
+
+You can also embed plots, for example:
+
+```{r, echo=FALSE,eval=FALSE}
+plot(cars)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+```{r, echo=FALSE,message=FALSE}
+#Install library
+library(survival)
+
+
+
+mydata <- read.csv("Stages_Pivot_new.csv", header = T)
+
+
+mydata_subset <- mydata[c(17,18,19,20,21,22)]
+
+#Eliminate NAs
+mydata_subset = na.omit(mydata_subset)
+
+attach(mydata_subset)
+
+#Here I take median order frequency, for the total group, it`s around 33 days
+time <- days_since_firstorder
+event <- churn_ind
+
+#Basic setup 
+survival <- Surv(time,event == 1)
+
+#Fit survival curve by gender
+fit_gender <- survfit(survival ~ female, data = mydata_subset)
+
+#Fit survival curve by city
+fit_city <- survfit(survival ~ berlin, data = mydata_subset)
+```
+
+
+```{r, echo=FALSE}
+#Plot curve by gender
+plot(fit_gender, lty = 1:2, mark.time = FALSE, ylim = c(0.3,1), xlab = "Days since first order", ylab = "Survival probability")
+legend(20,0.8,c('Male','Female'),lty=1:2,bty='n',ncol=2)
+title(main="Survival curve by gender")
+
+#Plot curve by city
+plot(fit_city, lty = 1:2, mark.time = FALSE, ylim = c(0.3,1), xlab = "Days since first order", ylab = "Survival probability")
+legend(20,0.8,c('London','Berlin'),lty=1:2,bty='n',ncol=2)
+title(main="Survival curve by city")
+
+```
+
+
+```{r,eval=FALSE, echo=FALSE}
+#Log rank by gender
+survdiff(survival ~ female, data=mydata_subset)
+
+#Log rank by city
+survdiff(survival ~ berlin, data=mydata_subset)
+
+```
+
+
